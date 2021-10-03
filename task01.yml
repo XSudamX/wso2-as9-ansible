@@ -1,4 +1,4 @@
-- name: Create 2 GCP instances with apache installed
+- name: Create 2 GCP instances
   hosts: localhost
   gather_facts: no
   vars:
@@ -41,12 +41,12 @@
          disks:
            - auto_delete: true
              boot: true
-             source: "{{ disk }}"
+             source: "{{ disk1 }}"
          network_interfaces:
              - network: null 
                access_configs:
                  - name: 'External NAT'
-                   nat_ip: "{{ address }}"
+                   nat_ip: "{{ address1 }}"
                    type: 'ONE_TO_ONE_NAT'
          zone: "{{ zone }}"
          project: "{{ gcp_project }}"
@@ -57,12 +57,13 @@
      register: instance1
 
    - name: Wait for SSH to come up
-     wait_for: host={{ address.address }} port=22 delay=10 timeout=60
+     wait_for: host={{ address1.address1 }} port=22 delay=10 timeout=60
 
    - name: Add host to groupname
-     add_host: hostname={{ address.address }} groupname=new_instances
+     add_host: hostname={{ address1.address1 }} groupname=new_instances
 
 
+   # Instance 02
    - name: Create Disk 2
      gcp_compute_disk:
          name: 'disk-instance'
@@ -95,12 +96,12 @@
          disks:
            - auto_delete: true
              boot: true
-             source: "{{ disk }}"
+             source: "{{ disk2 }}"
          network_interfaces:
              - network: null 
                access_configs:
                  - name: 'External NAT'
-                   nat_ip: "{{ address }}"
+                   nat_ip: "{{ address2 }}"
                    type: 'ONE_TO_ONE_NAT'
          zone: "{{ zone }}"
          project: "{{ gcp_project }}"
@@ -109,20 +110,39 @@
          scopes:
            - https://www.googleapis.com/auth/compute
      register: instance2
-
    - name: Wait for SSH to come up
-     wait_for: host={{ address.address }} port=22 delay=10 timeout=60
-
+     wait_for: host={{ address2.address2 }} port=22 delay=10 timeout=60
    - name: Add host to groupname
-     add_host: hostname={{ address.address }} groupname=new_instances
+     add_host: hostname={{ address2.address2 }} groupname=new_instances
 
 
-
-
-- name: Manage new instances
+- name: Install apache on both instances
   hosts: new_instances
-  connection: ssh
   become: True
-  roles:
-    - base_configuration
-    - production_server
+  tasks:
+    - name: Run apt-get update
+      command: apt-get update
+    - name: Install latest version of Apache
+      apt: name=apache2 update_cache=yes state=latest
+    - name: "UFW firewall allow HTTP on port 80"
+      ufw:
+        rule: allow
+        port: "80"
+        proto: tcp
+
+
+- name: Deploy webpage on instance 1
+  hosts: {{ address1 }}
+  tasks:
+    - name: Copy Index File 1
+      copy: src=.apache-html/index.htm dest=/var/www/html/index.html
+    - name: Restart Apache
+      command: systemctl restart apache2
+
+- name: Deploy webpage on instance 2
+  hosts: {{ address2 }}
+  tasks:
+    - name: Copy Index File 2
+      copy: src=.apache-html/index.html dest=/var/www/html/index.html
+    - name: Restart Apache
+      command: systemctl restart apache2
