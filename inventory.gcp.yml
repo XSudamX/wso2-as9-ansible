@@ -1,0 +1,5 @@
+plugin: gcp_compute
+projects:
+  - teak-kit-318419
+auth_kind: serviceaccount
+service_account_file: /home/Umahasu/my-ansible/teak-kit-318419-2f7c0eb80cc4.json
