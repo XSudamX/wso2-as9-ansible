@@ -48,6 +48,9 @@
                  - name: 'External NAT'
                    nat_ip: "{{ address1 }}"
                    type: 'ONE_TO_ONE_NAT'
+         tags:
+          items:
+            - http-server
          zone: "{{ zone }}"
          project: "{{ gcp_project }}"
          auth_kind: "{{ gcp_cred_kind }}"
@@ -103,6 +106,9 @@
                  - name: 'External NAT'
                    nat_ip: "{{ address2 }}"
                    type: 'ONE_TO_ONE_NAT'
+         tags:
+          items:
+            - http-server
          zone: "{{ zone }}"
          project: "{{ gcp_project }}"
          auth_kind: "{{ gcp_cred_kind }}"
@@ -116,33 +122,28 @@
      add_host: hostname={{ address2.address2 }} groupname=new_instances
 
 
-- name: Install apache on both instances
+- name: Install apache on both instances and deploy web page
   hosts: new_instances
+  gather_facts: yes
   become: True
   tasks:
-    - name: Run apt-get update
-      command: apt-get update
     - name: Install latest version of Apache
-      apt: name=apache2 update_cache=yes state=latest
+      apt:
+        name: apache2
+        state: latest
+        update_cache: yes
     - name: "UFW firewall allow HTTP on port 80"
       ufw:
         rule: allow
         port: "80"
         proto: tcp
-
-
-- name: Deploy webpage on instance 1
-  hosts: {{ address1 }}
-  tasks:
-    - name: Copy Index File 1
-      copy: src=.apache-html/index.htm dest=/var/www/html/index.html
-    - name: Restart Apache
-      command: systemctl restart apache2
-
-- name: Deploy webpage on instance 2
-  hosts: {{ address2 }}
-  tasks:
-    - name: Copy Index File 2
-      copy: src=.apache-html/index.html dest=/var/www/html/index.html
-    - name: Restart Apache
-      command: systemctl restart apache2
+    - name: "Deploy web page on apache"
+      template: 
+        src: "task01template.j2"
+        dest: "/var/www/html/index.html"
+      notify: "restart apache"
+  handlers:
+    - name: restart apache
+      service:
+        name: apache2
+        state: restarted
