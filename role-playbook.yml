@@ -1,0 +1,12 @@
+---
+- name: Create 2 GCP instances
+  hosts: localhost
+  gather_facts: no
+  roles: 
+    - web-stg-creation
+- name: Install apache on both instances and deploy web page
+  hosts: new_instances
+  gather_facts: yes
+  become: True
+  roles:
+    - web-stg-deployment

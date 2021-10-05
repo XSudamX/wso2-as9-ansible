@@ -1,0 +1,20 @@
+---
+# Task 01 Part 02 - Deployment
+- name: Install latest version of Apache
+  apt:
+    name: apache2
+    state: latest
+    update_cache: yes
+- name: "UFW firewall allow HTTP on port 80"
+  ufw:
+    rule: allow
+    port: "80"
+    proto: tcp
+- name: "Deploy web page on apache"
+  template: 
+    src: "task01template.j2"
+    dest: "/var/www/html/index.html"
+  notify: "restart apache"
+- name: "Task 02, Change Hostnames"
+  hostname:
+    name: "LT-2021-055-webserver{{ groups.somegroup.index(inventory_hostname) }}"

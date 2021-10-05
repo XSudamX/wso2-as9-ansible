@@ -1,0 +1,6 @@
+---
+# handlers file for roles/web-stg-creation
+- name: restart apache
+  service:
+    name: apache2
+    state: restarted

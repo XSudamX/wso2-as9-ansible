@@ -1,0 +1,7 @@
+---
+# vars file for roles/web-stg-creation
+gcp_project: teak-kit-318419
+gcp_cred_kind: serviceaccount
+gcp_cred_file: /home/Umahasu/my-ansible/teak-kit-318419-2f7c0eb80cc4.json
+zone: "us-central1-a"
+region: "us-central1"

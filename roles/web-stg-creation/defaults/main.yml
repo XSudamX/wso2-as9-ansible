@@ -1,0 +1,7 @@
+---
+# defaults file for roles/web-stg-creation
+inventory: inventories/dynamic-inventory.gcp.yml
+enable_plugins: gcp_compute
+host_key_checking: False
+remote_user: ubuntu
+roles_path: /roles
