@@ -13,7 +13,7 @@
     #Instance 01
     - name: Create Disk 1
       gcp_compute_disk:
-        name: 'disk-instance'
+        name: 'disk-instance-01'
         size_gb: 30
         source_image: 'projects/ubuntu-os-cloud/global/images/family/ubuntu-2004-lts'
         zone: "{{ zone }}"
@@ -26,7 +26,7 @@
       register: disk1
     - name: Create Address 1
       gcp_compute_address:
-        name: 'address-instance'
+        name: 'address-instance-01'
         region: "{{ region }}"
         project: "{{ gcp_project }}"
         auth_kind: "{{ gcp_cred_kind }}"
@@ -61,15 +61,15 @@
           - https://www.googleapis.com/auth/compute
       register: instance1
     - name: Wait for SSH to come up
-      wait_for: host={{ address1 }} port=22 delay=10 timeout=60
+      wait_for: host={{ address1.address }} port=22 delay=10 timeout=60
     - name: Add host to groupname
       add_host:
-        hostname: '{{ address1 }}'
+        hostname: '{{ address1.address }}'
         groupname: new_instances
     # Instance 02
     - name: Create Disk 2
       gcp_compute_disk:
-        name: 'disk-instance'
+        name: 'disk-instance-02'
         size_gb: 30
         source_image: 'projects/ubuntu-os-cloud/global/images/family/ubuntu-2004-lts'
         zone: "{{ zone }}"
@@ -82,7 +82,7 @@
       register: disk2
     - name: Create Address 2
       gcp_compute_address:
-        name: 'address-instance'
+        name: 'address-instance-02'
         region: "{{ region }}"
         project: "{{ gcp_project }}"
         auth_kind: "{{ gcp_cred_kind }}"
@@ -117,10 +117,10 @@
           - https://www.googleapis.com/auth/compute
       register: instance2
     - name: Wait for SSH to come up
-      wait_for: host={{ address2 }} port=22 delay=10 timeout=60
+      wait_for: host={{ address2.address }} port=22 delay=10 timeout=60
     - name: Add host to groupname
       add_host: 
-        hostname: '{{ address2 }}'
+        hostname: '{{ address2.address }}'
         groupname: new_instances
 # 2 - Deployment
 - name: Install apache on both instances and deploy web page
